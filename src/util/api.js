@@ -43,7 +43,7 @@ const cached_request = (
     ...queryOptions
   })
 
-export const list_accounts = () => cached_request({ url: "/accounts" });
+export const list_accounts = () => cached_request({ url: "/accounts" }, { placeholderData: []});
 
 export const delete_account = async (obj) =>
   request({ url: `/accounts/${obj.id}`, method: "DELETE" });
@@ -70,3 +70,9 @@ export const delete_scheduledjob = async (obj) =>
 
 export const generate_post_proposal = async (obj) =>
   request({ url: `/generate_post_proposal`, method: "POST", body: obj });
+
+export const get_post_in_generation = async () =>
+  request({ url: `/get_post_in_generation` });
+
+export const generate_post_schedule = async (obj) =>
+  request({ url: `/generate_post_schedule`, method: "POST", body: obj });

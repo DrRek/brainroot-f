@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogActions,
@@ -10,15 +10,17 @@ import {
   Snackbar,
 } from "@mui/material";
 import YouTube from "react-youtube";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import DateTimeField from "./DateTimeField";
+import { generate_post_schedule } from "../util/api";
 
-const EditJobDialog = ({ open, data, onClose, onSubmit }) => {
+const EditJobDialog = ({ open, data, onClose }) => {
   const [formData, setFormData] = useState({ duration: 30, ...data });
   const [loading, setLoading] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+
+  useEffect(() => {
+    if (data) setFormData(data);
+  }, [data]);
 
   // Handle input changes for editable fields
   const handleInputChange = (e) => {
@@ -29,20 +31,12 @@ const EditJobDialog = ({ open, data, onClose, onSubmit }) => {
     }));
   };
 
-  // Handle date-time changes
-  const handleDateChange = (newDate) => {
-    setFormData((prev) => ({
-      ...prev,
-      time: newDate, // Set the selected date to the form data
-    }));
-  };
-
   // Handle the submission of the job
   const handleSubmit = async () => {
     setLoading(true);
     setNotificationOpen(true); // Notify user that the background task has started
     try {
-      await onSubmit(formData); // Submit the formData
+      await generate_post_schedule(formData); // Submit the formData
     } catch (error) {
       console.error("Error submitting the job:", error);
     } finally {

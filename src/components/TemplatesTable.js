@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -18,6 +18,8 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 import {
   list_accounts,
@@ -82,21 +84,28 @@ const TemplatesTable = ({ openNewPostDialog }) => {
     }
   };
 
+  const [isGeneratingPost, setIsGeneratingPost] = useState(false);
   const handleGeneratePrompt = async (template) => {
-    while (true) {
-      console.log("getting a proposal");
-      const proposal = await generate_post_proposal({
-        template_id: template.id,
-        ai_prompt: template.ai_prompt,
-        recurpost_ids: template.accounts
-          .map((accountId) => accounts.find((acc) => acc.id === accountId))
-          .map((acc) => acc.recurpost_id),
-      });
+    setIsGeneratingPost(true);
+    try {
+      while (true) {
+        console.log("getting a proposal");
+        const proposal = await generate_post_proposal({
+          template_id: template.id,
+          ai_prompt: template.ai_prompt,
+          recurpost_ids: template.accounts
+            .map((accountId) => accounts.find((acc) => acc.id === accountId))
+            .map((acc) => acc.recurpost_id),
+        });
 
-      if (proposal.success) {
-        openNewPostDialog(proposal);
-        return;
+        if (proposal.success) {
+          openNewPostDialog(proposal);
+          setIsGeneratingPost(false);
+          return;
+        }
       }
+    } finally {
+      setIsGeneratingPost(false);
     }
   };
 
@@ -152,6 +161,25 @@ const TemplatesTable = ({ openNewPostDialog }) => {
                   Refresh
                 </Button>
                 <Button onClick={handleCreate}>Add</Button>
+                <Button
+                  onClick={() =>
+                    openNewPostDialog({
+                      caption:
+                        "Take a moment to center yourself with meditation. Just a few minutes can transform your day. \ud83c\udf3f\ud83e\uddd8\u200d\u2642\ufe0f #MindfulMoments #MeditationBreak #StayCentered #PeaceWithin #CalmTheMind #RelaxAndReflect #InnerPeace #FindYourCalm #BreatheInBreatheOut #PauseAndReset",
+                      duration: 30,
+                      overlay: "Pause. Breathe. Reflect.",
+                      recurpost_ids: [167957, 167956],
+                      start_at_seconds: 0,
+                      success: true,
+                      template_id: 1,
+                      time: "Mon, 07 Oct 2024 09:45:00 GMT",
+                      youtube_video_url:
+                        "https://www.youtube.com/watch?v=BHACKCNDMW8",
+                    })
+                  }
+                >
+                  Sample Proposal
+                </Button>
               </TableCell>
             </TableRow>
           </TableHead>
@@ -228,6 +256,10 @@ const TemplatesTable = ({ openNewPostDialog }) => {
           </Button>
         </DialogActions>
       </Dialog>
+      {/* Loader */}
+      <Backdrop open={isGeneratingPost} style={{ zIndex: 1000 }}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </Paper>
   );
 };

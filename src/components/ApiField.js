@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TextField } from "@mui/material";
 
-export default () => {
+const ApiField = () => {
   const [apiKey, setApiKey] = useState("");
 
   // Update API_KEY global variable and store in local storage
@@ -29,3 +29,5 @@ export default () => {
     />
   );
 };
+
+export default ApiField

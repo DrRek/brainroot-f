@@ -68,6 +68,7 @@ const AccountsTable = () => {
                   >
                     <MenuItem value="INSTAGRAM">Instagram</MenuItem>
                     <MenuItem value="TIKTOK">TikTok</MenuItem>
+                    <MenuItem value="FACEBOOK">FaceBook</MenuItem>
                   </Select>
                 </TableCell>
                 <TableCell>

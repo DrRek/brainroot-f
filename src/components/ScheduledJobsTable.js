@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -53,9 +53,9 @@ const ScheduledJobsTable = () => {
               <TableCell>ID</TableCell>
               <TableCell>Time</TableCell>
               <TableCell>Send</TableCell>
+              <TableCell>Template</TableCell>
               <TableCell>Video URL</TableCell>
               <TableCell>Caption</TableCell>
-              <TableCell>Template</TableCell>
               <TableCell>
                 <Button onClick={refetch} disabled={isFetching}>
                   Refresh
@@ -64,26 +64,28 @@ const ScheduledJobsTable = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {sortedJobs.map((job) => (
+            {sortedJobs.map((job) => {
+                const data = JSON.parse(job.data) || {}
+                return(
               <TableRow key={job.id}>
                 <TableCell>{job.id}</TableCell>
                 <TableCell>{new Date(job.time).toLocaleString()}</TableCell>
                 <TableCell>{job.send ? "Yes" : "No"}</TableCell>
+                <TableCell>{job.template || "N/A"}</TableCell>
                 <TableCell>
-                  {job.data?.video_url ? (
+                  {data?.video_path ? (
                     <a
-                      href={job.data.video_url}
+                      href={data?.video_path}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      {job.data.video_url}
+                      {data?.video_path}
                     </a>
                   ) : (
                     "N/A"
                   )}
                 </TableCell>
-                <TableCell>{job.data?.caption || "N/A"}</TableCell>
-                <TableCell>{job.data?.template || "N/A"}</TableCell>
+                <TableCell>{data?.caption || "N/A"}</TableCell>
                 <TableCell>
                   <Button
                     variant="contained"
@@ -94,7 +96,7 @@ const ScheduledJobsTable = () => {
                   </Button>
                 </TableCell>
               </TableRow>
-            ))}
+            )})}
           </TableBody>
         </Table>
       </TableContainer>
