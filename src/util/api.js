@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { useQuery } from "@tanstack/react-query";
 
-const base_url = "http://127.0.0.1:5000";
+const base_url = "http://158.180.232.214:43231";
 
 async function request({ url, method = "GET", headers = {}, body = null }) {
   try {

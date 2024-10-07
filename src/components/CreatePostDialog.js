@@ -66,6 +66,7 @@ const EditJobDialog = ({ open, data, onClose }) => {
           margin="normal"
           label="Overlay"
           name="overlay"
+          multiline={true}
           value={formData.overlay || ""}
           onChange={handleInputChange}
         />
@@ -77,7 +78,7 @@ const EditJobDialog = ({ open, data, onClose }) => {
             handleInputChange({
               target: {
                 name: "time",
-                value: parseInt(time),
+                value: time,
               },
             })
           }
@@ -155,7 +156,7 @@ const EditJobDialog = ({ open, data, onClose }) => {
           name="template_id"
           type="number"
           disabled={true}
-          value={formData.duration || ""}
+          value={formData.template_id || ""}
           onChange={handleInputChange}
         />
       </DialogContent>

@@ -52,7 +52,7 @@ const ScheduledJobsTable = () => {
             <TableRow>
               <TableCell>ID</TableCell>
               <TableCell>Time</TableCell>
-              <TableCell>Send</TableCell>
+              <TableCell>Sent</TableCell>
               <TableCell>Template</TableCell>
               <TableCell>Video URL</TableCell>
               <TableCell>Caption</TableCell>
@@ -70,7 +70,7 @@ const ScheduledJobsTable = () => {
               <TableRow key={job.id}>
                 <TableCell>{job.id}</TableCell>
                 <TableCell>{new Date(job.time).toLocaleString()}</TableCell>
-                <TableCell>{job.send ? "Yes" : "No"}</TableCell>
+                <TableCell>{job.sent ? "Yes" : "No"}</TableCell>
                 <TableCell>{job.template || "N/A"}</TableCell>
                 <TableCell>
                   {data?.video_path ? (
