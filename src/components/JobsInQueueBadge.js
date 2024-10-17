@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Box, Badge, CircularProgress } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import { get_post_in_generation } from "../util/api";
 
 const JobStatusBadge = () => {
@@ -10,7 +10,6 @@ const JobStatusBadge = () => {
   const fetchJobCount = async () => {
     try {
       const response = await get_post_in_generation();
-      console.log(response);
       setJobs(response || {});
     } catch (error) {
       console.error("Error fetching job count:", error);

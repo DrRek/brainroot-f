@@ -1,7 +1,10 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { useQuery } from "@tanstack/react-query";
 
-const base_url = "http://158.180.232.214:43231";
+const base_url =
+  window.location.hostname === "localhost"
+    ? "http://localhost:43231"
+    : "http://158.180.232.214:43231";
 
 async function request({ url, method = "GET", headers = {}, body = null }) {
   try {
@@ -40,10 +43,11 @@ const cached_request = (
     queryKey: [url, method, body],
     queryFn: () => request({ url, method, headers, body }),
     staleTime: 60000,
-    ...queryOptions
-  })
+    ...queryOptions,
+  });
 
-export const list_accounts = () => cached_request({ url: "/accounts" }, { placeholderData: []});
+export const list_accounts = () =>
+  cached_request({ url: "/accounts" }, { placeholderData: [] });
 
 export const delete_account = async (obj) =>
   request({ url: `/accounts/${obj.id}`, method: "DELETE" });
@@ -68,8 +72,14 @@ export const list_scheduledjobs = () => cached_request({ url: "/jobs" });
 export const delete_scheduledjob = async (obj) =>
   request({ url: `/jobs/${obj.id}`, method: "DELETE" });
 
-export const generate_post_proposal = async (obj) =>
-  request({ url: `/generate_post_proposal`, method: "POST", body: obj });
+export const generate_post_proposal_get_suggested_time = async (body) =>
+  request({ url: `/generate_post_proposal_get_suggested_time`, method: "POST", body });
+
+export const generate_post_proposal_get_suggested_texts = async (body) =>
+  request({ url: `/generate_post_proposal_get_suggested_texts`, method: "POST", body });
+
+export const generate_post_proposal_get_suggested_video = async (body) =>
+  request({ url: `/generate_post_proposal_get_suggested_video`, method: "POST", body });
 
 export const get_post_in_generation = async () =>
   request({ url: `/get_post_in_generation` });

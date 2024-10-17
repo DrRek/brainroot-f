@@ -26,7 +26,6 @@ import {
   list_templates,
   set_template,
   delete_template,
-  generate_post_proposal,
 } from "../util/api"; // Adjust import according to your structure
 
 const TemplatesTable = ({ openNewPostDialog }) => {
@@ -86,24 +85,12 @@ const TemplatesTable = ({ openNewPostDialog }) => {
 
   const [isGeneratingPost, setIsGeneratingPost] = useState(false);
   const handleGeneratePrompt = async (template) => {
+    if(template.was_edited) // save the template if the user made same changes and forgot to click on save
+      await saveTemplate(template)
+
     setIsGeneratingPost(true);
     try {
-      while (true) {
-        console.log("getting a proposal");
-        const proposal = await generate_post_proposal({
-          template_id: template.id,
-          ai_prompt: template.ai_prompt,
-          recurpost_ids: template.accounts
-            .map((accountId) => accounts.find((acc) => acc.id === accountId))
-            .map((acc) => acc.recurpost_id),
-        });
-
-        if (proposal.success) {
-          openNewPostDialog(proposal);
-          setIsGeneratingPost(false);
-          return;
-        }
-      }
+      openNewPostDialog(template);
     } finally {
       setIsGeneratingPost(false);
     }
@@ -194,6 +181,7 @@ const TemplatesTable = ({ openNewPostDialog }) => {
                     onChange={(e) =>
                       handleEdit(index, "ai_prompt", e.target.value)
                     }
+                    multiline={true}
                   />
                 </TableCell>
                 <TableCell>

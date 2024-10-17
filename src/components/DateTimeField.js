@@ -23,7 +23,7 @@ const MyComponent = ({time, setTime}) => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <DateTimePicker
-        label="Basic date time picker"
+        label="Date"
         value={dayjs(initialDate)} // Convert to dayjs compatible format
         onChange={handleDateChange}
         slotProps={{ textField: { fullWidth: true, margin: "normal" } }}

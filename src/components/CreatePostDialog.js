@@ -11,16 +11,65 @@ import {
 } from "@mui/material";
 import YouTube from "react-youtube";
 import DateTimeField from "./DateTimeField";
-import { generate_post_schedule } from "../util/api";
+import {
+  generate_post_schedule,
+  generate_post_proposal_get_suggested_time,
+  generate_post_proposal_get_suggested_texts,
+  generate_post_proposal_get_suggested_video,
+} from "../util/api";
 
 const EditJobDialog = ({ open, data, onClose }) => {
-  const [formData, setFormData] = useState({ duration: 30, ...data });
+  const [formData, setFormData] = useState({ start_at_seconds:0, duration: 30, ...data });
   const [loading, setLoading] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
 
+  const requestTimeSuggestion = async (template_id) => {
+    if (template_id) {
+      const response = await generate_post_proposal_get_suggested_time({
+        template_id,
+      });
+      setFormData((prev) => ({
+        ...prev,
+        time: response.time,
+      }));
+    }
+  };
+
+  const requestTextsSuggestion = async () => {
+    if (data?.id, data?.ai_prompt) {
+      const response = await generate_post_proposal_get_suggested_texts({
+        template_id: data?.id,
+        ai_prompt: data?.ai_prompt,
+      });
+      setFormData((prev) => ({
+        ...prev,
+        caption: response.caption.trim().replace(/^"|"$/g, '').trim(),
+        overlay: response.overlay.trim().replace(/^"|"$/g, '').trim(),
+        youtube_search: response.youtube_search.trim().replace(/^"|"$/g, '').trim(),
+      }));
+    }
+  };
+
+  const requestVideoSuggestion = async () => {
+    if (data.id && formData.youtube_search) {
+      const response = await generate_post_proposal_get_suggested_video({
+        template_id: data.id,
+        youtube_search: formData.youtube_search,
+      });
+      setFormData((prev) => ({
+        ...prev,
+        youtube_video_url: response.youtube_video_url,
+      }));
+    }
+  };
+
   useEffect(() => {
-    if (data) setFormData(data);
-  }, [data]);
+    requestTimeSuggestion(data?.id);
+  }, [data?.id]);
+
+  useEffect(() => {
+    requestTextsSuggestion();
+  }, [data?.ai_prompt, data?.id]);
 
   // Handle input changes for editable fields
   const handleInputChange = (e) => {
@@ -50,7 +99,27 @@ const EditJobDialog = ({ open, data, onClose }) => {
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
       <DialogTitle>Create Post</DialogTitle>
       <DialogContent dividers>
-        {/* Editable Caption Field */}
+        {/* Editable Time Field (DateTime Picker) */}
+        <DateTimeField
+          time={formData.time}
+          setTime={(time) =>
+            handleInputChange({
+              target: {
+                name: "time",
+                value: time,
+              },
+            })
+          }
+        />
+
+        {/* Retry button */}
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={requestTextsSuggestion}          
+        >
+          Regenerate Texts
+        </Button>
         <TextField
           fullWidth
           margin="normal"
@@ -71,18 +140,23 @@ const EditJobDialog = ({ open, data, onClose }) => {
           onChange={handleInputChange}
         />
 
-        {/* Editable Time Field (DateTime Picker) */}
-        <DateTimeField
-          time={formData.time}
-          setTime={(time) =>
-            handleInputChange({
-              target: {
-                name: "time",
-                value: time,
-              },
-            })
-          }
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Youtube Search"
+          name="youtube_search"
+          multiline={true}
+          value={formData.youtube_search || ""}
+          onChange={handleInputChange}
         />
+
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={requestVideoSuggestion}          
+        >
+          Find Video
+        </Button>
 
         {/* Editable YouTube Video URL */}
         <TextField
