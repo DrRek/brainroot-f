@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useCallback } from "react";
 import {
   Dialog,
   DialogActions,
@@ -19,7 +19,11 @@ import {
 } from "../util/api";
 
 const EditJobDialog = ({ open, data, onClose }) => {
-  const [formData, setFormData] = useState({ start_at_seconds:0, duration: 30, ...data });
+  const [formData, setFormData] = useState({
+    start_at_seconds: 0,
+    duration: 30,
+    ...data,
+  });
   const [loading, setLoading] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
 
@@ -35,20 +39,23 @@ const EditJobDialog = ({ open, data, onClose }) => {
     }
   };
 
-  const requestTextsSuggestion = async () => {
-    if (data?.id, data?.ai_prompt) {
+  const requestTextsSuggestion = useCallback(async () => {
+    if ((data?.id, data?.ai_prompt)) {
       const response = await generate_post_proposal_get_suggested_texts({
         template_id: data?.id,
         ai_prompt: data?.ai_prompt,
       });
       setFormData((prev) => ({
         ...prev,
-        caption: response.caption.trim().replace(/^"|"$/g, '').trim(),
-        overlay: response.overlay.trim().replace(/^"|"$/g, '').trim(),
-        youtube_search: response.youtube_search.trim().replace(/^"|"$/g, '').trim(),
+        caption: response.caption.trim().replace(/^"|"$/g, "").trim(),
+        overlay: response.overlay.trim().replace(/^"|"$/g, "").trim(),
+        youtube_search: response.youtube_search
+          .trim()
+          .replace(/^"|"$/g, "")
+          .trim(),
       }));
     }
-  };
+  }, [data?.id, data?.ai_prompt]);
 
   const requestVideoSuggestion = async () => {
     if (data.id && formData.youtube_search) {
@@ -68,8 +75,17 @@ const EditJobDialog = ({ open, data, onClose }) => {
   }, [data?.id]);
 
   useEffect(() => {
+    if (data?.id && data?.accounts)
+      setFormData((prev) => ({
+        ...prev,
+        template_id: data.id,
+        recurpost_ids: data.accounts,
+      }));
+  }, [data?.id, data?.accounts]);
+
+  useEffect(() => {
     requestTextsSuggestion();
-  }, [data?.ai_prompt, data?.id]);
+  }, [data?.ai_prompt, data?.id, requestTextsSuggestion]);
 
   // Handle input changes for editable fields
   const handleInputChange = (e) => {
@@ -116,7 +132,7 @@ const EditJobDialog = ({ open, data, onClose }) => {
         <Button
           variant="contained"
           color="primary"
-          onClick={requestTextsSuggestion}          
+          onClick={requestTextsSuggestion}
         >
           Regenerate Texts
         </Button>
@@ -153,7 +169,7 @@ const EditJobDialog = ({ open, data, onClose }) => {
         <Button
           variant="contained"
           color="primary"
-          onClick={requestVideoSuggestion}          
+          onClick={requestVideoSuggestion}
         >
           Find Video
         </Button>
