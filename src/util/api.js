@@ -72,6 +72,9 @@ export const list_scheduledjobs = () => cached_request({ url: "/jobs" });
 export const delete_scheduledjob = async (obj) =>
   request({ url: `/jobs/${obj.id}`, method: "DELETE" });
 
+export const set_scheduledJob = async (obj) =>
+  request({ url: `/jobs/${obj.id}`, method: "PUT", body: obj })
+
 export const generate_post_proposal_get_suggested_time = async (body) =>
   request({ url: `/generate_post_proposal_get_suggested_time`, method: "POST", body });
 

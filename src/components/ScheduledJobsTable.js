@@ -13,8 +13,85 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Select,
+  MenuItem,
 } from "@mui/material";
-import { list_scheduledjobs, delete_scheduledjob } from "../util/api"; // Adjust import according to your structure
+import {
+  list_scheduledjobs,
+  delete_scheduledjob,
+  set_scheduledJob,
+} from "../util/api"; // Adjust import according to your structure
+import DateTimeField from "./DateTimeField";
+
+const TableRowCustom = ({ job, handleDeleteClick, handleUpdate }) => {
+  const [newTime, setNewTime] = useState(null);
+  const [newSent, setNewSent] = useState(null);
+  const data = JSON.parse(job?.data) || {};
+  const handleSaveClick = () => {
+    const jobUpdated = {
+      id: job.id,
+    };
+    if (newTime !== null) jobUpdated["time"] = newTime;
+    if (newSent != null) jobUpdated["sent"] = newSent;
+    handleUpdate(jobUpdated);
+    setNewTime(null);
+    setNewSent(null);
+  };
+  return (
+    <TableRow key={job.id}>
+      <TableCell>{job.id}</TableCell>
+      <TableCell onClick={() => !newTime && setNewTime(job?.time)}>
+        {!newTime ? (
+          new Date(job.time).toLocaleString()
+        ) : (
+          <DateTimeField time={newTime} setTime={setNewTime} />
+        )}
+      </TableCell>
+      <TableCell onClick={() => newSent === null && setNewSent(job?.sent)}>
+        {newSent === null ? (
+          job.sent ? (
+            "Yes"
+          ) : (
+            "No"
+          )
+        ) : (
+          <Select value={newSent} onChange={(e) => setNewSent(e.target.value)}>
+            <MenuItem value={true}>Yes</MenuItem>
+            <MenuItem value={false}>No</MenuItem>
+          </Select>
+        )}
+      </TableCell>
+      <TableCell>{job.template || "N/A"}</TableCell>
+      <TableCell>
+        {data?.video_path ? (
+          <a href={data?.video_path} target="_blank" rel="noopener noreferrer">
+            {data?.video_path}
+          </a>
+        ) : (
+          "N/A"
+        )}
+      </TableCell>
+      <TableCell>{data?.caption || "N/A"}</TableCell>
+      <TableCell>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => handleSaveClick(job)}
+          disabled={newTime === null && newSent === null}
+        >
+          Save
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => handleDeleteClick(job)}
+        >
+          Delete
+        </Button>
+      </TableCell>
+    </TableRow>
+  );
+};
 
 const ScheduledJobsTable = () => {
   const { data: scheduledJobs, refetch, isFetching } = list_scheduledjobs();
@@ -29,6 +106,15 @@ const ScheduledJobsTable = () => {
       await delete_scheduledjob(deleteDialog.job);
       refetch(); // Refresh scheduled jobs after deletion
       setDeleteDialog({ open: false, job: null });
+    } catch (error) {
+      console.error("Error deleting scheduled job:", error);
+    }
+  };
+
+  const handleUpdate = async (job) => {
+    try {
+      await set_scheduledJob(job);
+      refetch();
     } catch (error) {
       console.error("Error deleting scheduled job:", error);
     }
@@ -65,38 +151,14 @@ const ScheduledJobsTable = () => {
           </TableHead>
           <TableBody>
             {sortedJobs.map((job) => {
-                const data = JSON.parse(job.data) || {}
-                return(
-              <TableRow key={job.id}>
-                <TableCell>{job.id}</TableCell>
-                <TableCell>{new Date(job.time).toLocaleString()}</TableCell>
-                <TableCell>{job.sent ? "Yes" : "No"}</TableCell>
-                <TableCell>{job.template || "N/A"}</TableCell>
-                <TableCell>
-                  {data?.video_path ? (
-                    <a
-                      href={data?.video_path}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {data?.video_path}
-                    </a>
-                  ) : (
-                    "N/A"
-                  )}
-                </TableCell>
-                <TableCell>{data?.caption || "N/A"}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={() => handleDeleteClick(job)}
-                  >
-                    Delete
-                  </Button>
-                </TableCell>
-              </TableRow>
-            )})}
+              return (
+                <TableRowCustom
+                  job={job}
+                  handleDeleteClick={handleDeleteClick}
+                  handleUpdate={handleUpdate}
+                />
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
