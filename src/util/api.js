@@ -6,21 +6,31 @@ const base_url =
     ? "http://localhost:43231"
     : "http://158.180.232.214:43231";
 
+const buildUrlWithParams = (url, params) => {
+  const queryString = params ? new URLSearchParams(params).toString() : false;
+  return queryString ? `${base_url}${url}?${queryString}` : `${base_url}${url}`;
+};
+
 async function request({ url, method = "GET", headers = {}, body = null }) {
   try {
+    const methodFixed = method.toUpperCase();
     // Set up the request options
     const options = {
-      method: method.toUpperCase(),
+      method: methodFixed,
       headers: {
         "Content-Type": "application/json",
         "X-API-Key": localStorage.getItem("API_KEY"),
         ...headers, // Spread operator to include additional headers
       },
-      body: body ? JSON.stringify(body) : null, // Convert body to JSON if provided
+      body: body && methodFixed !== "GET" ? JSON.stringify(body) : null, // Convert body to JSON if provided
     };
+    const final_url = buildUrlWithParams(
+      url,
+      methodFixed === "GET" && body ? body : null
+    );
 
     // Make the request
-    const response = await fetch(base_url + url, options);
+    const response = await fetch(final_url, options);
 
     // Check if the response is okay (status in the range 200-299)
     if (!response.ok) {
@@ -67,22 +77,38 @@ export const set_template = async (obj) =>
     ? request({ url: `/templates/${obj.id}`, method: "PUT", body: obj })
     : request({ url: "/templates", method: "POST", body: obj });
 
-export const list_scheduledjobs = () => cached_request({ url: "/jobs" });
+export const list_scheduledjobs = (obj) =>
+  cached_request({ url: "/jobs", body: obj });
 
 export const delete_scheduledjob = async (obj) =>
   request({ url: `/jobs/${obj.id}`, method: "DELETE" });
 
 export const set_scheduledJob = async (obj) =>
-  request({ url: `/jobs/${obj.id}`, method: "PUT", body: obj })
+  request({ url: `/jobs/${obj.id}`, method: "PUT", body: obj });
+
+export const send_now_scheduledjob = async (obj) =>
+  request({ url: `/jobs/${obj.id}/process`, method: "POST" });
 
 export const generate_post_proposal_get_suggested_time = async (body) =>
-  request({ url: `/generate_post_proposal_get_suggested_time`, method: "POST", body });
+  request({
+    url: `/generate_post_proposal_get_suggested_time`,
+    method: "POST",
+    body,
+  });
 
 export const generate_post_proposal_get_suggested_texts = async (body) =>
-  request({ url: `/generate_post_proposal_get_suggested_texts`, method: "POST", body });
+  request({
+    url: `/generate_post_proposal_get_suggested_texts`,
+    method: "POST",
+    body,
+  });
 
 export const generate_post_proposal_get_suggested_video = async (body) =>
-  request({ url: `/generate_post_proposal_get_suggested_video`, method: "POST", body });
+  request({
+    url: `/generate_post_proposal_get_suggested_video`,
+    method: "POST",
+    body,
+  });
 
 export const get_post_in_generation = async () =>
   request({ url: `/get_post_in_generation` });

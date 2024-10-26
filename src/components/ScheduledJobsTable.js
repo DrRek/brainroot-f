@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -15,15 +15,17 @@ import {
   DialogTitle,
   Select,
   MenuItem,
+  TextField,
 } from "@mui/material";
 import {
   list_scheduledjobs,
   delete_scheduledjob,
   set_scheduledJob,
+  send_now_scheduledjob
 } from "../util/api"; // Adjust import according to your structure
 import DateTimeField from "./DateTimeField";
 
-const TableRowCustom = ({ job, handleDeleteClick, handleUpdate }) => {
+const TableRowCustom = ({ job, handleDeleteClick, handleUpdate, handleSendClick }) => {
   const [newTime, setNewTime] = useState(null);
   const [newSent, setNewSent] = useState(null);
   const data = JSON.parse(job?.data) || {};
@@ -83,6 +85,13 @@ const TableRowCustom = ({ job, handleDeleteClick, handleUpdate }) => {
         </Button>
         <Button
           variant="contained"
+          color="primary"
+          onClick={() => handleSendClick(job)}
+        >
+          Send Now
+        </Button>
+        <Button
+          variant="contained"
           color="secondary"
           onClick={() => handleDeleteClick(job)}
         >
@@ -94,12 +103,56 @@ const TableRowCustom = ({ job, handleDeleteClick, handleUpdate }) => {
 };
 
 const ScheduledJobsTable = () => {
-  const { data: scheduledJobs, refetch, isFetching } = list_scheduledjobs();
+  const [filters, setFilters] = useState({
+    id: "",
+    timeType: "after", // "before" or "after"
+    timeValue: "",
+    sent: "false", // "true", "false", or "null"
+  });
+
+  const handleFilterChange = (field) => (event) => {
+    const value = event?.target ? event.target.value : event;
+    const newFilters = { ...filters, [field]: value };
+    setFilters(newFilters);
+  };
+
+  const backendFilters = useMemo(() => {
+    const parsedFilters = {};
+    if (filters.id !== "") parsedFilters["id"] = filters.id;
+    if (filters.timeValue !== "") {
+      parsedFilters["timeValue"] = filters.timeValue;
+    }
+    if (filters.sent !== "null")
+      parsedFilters["sent"] = filters.sent === "true";
+    return parsedFilters
+  }, [filters])
+
+  const { data: scheduledJobs, refetch, isFetching } = list_scheduledjobs(backendFilters);
 
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
     job: null,
   });
+
+  const [sendDialog, setSendDialog] = useState({
+    open: false,
+    job: null,
+  });
+
+  const handleSend = async () => {
+    try {
+      await send_now_scheduledjob(sendDialog.job);
+      refetch(); // Refresh scheduled jobs after deletion
+      setSendDialog({ open: false, job: null });
+    } catch (error) {
+      console.error("Error deleting scheduled job:", error);
+    }
+  };
+
+  const handleSendClick = (job) => {
+    console.log(job)
+    setSendDialog({ open: true, job });
+  };
 
   const handleDelete = async () => {
     try {
@@ -148,14 +201,53 @@ const ScheduledJobsTable = () => {
                 </Button>
               </TableCell>
             </TableRow>
+            <TableRow>
+              <TableCell>
+                <TextField
+                  label="ID"
+                  value={filters.id}
+                  onChange={handleFilterChange("id")}
+                  size="small"
+                />
+              </TableCell>
+              <TableCell>
+                <Select
+                  value={filters.timeType}
+                  onChange={handleFilterChange("timeType")}
+                  size="small"
+                >
+                  <MenuItem value="after">After</MenuItem>
+                  <MenuItem value="before">Before</MenuItem>
+                </Select>
+                <DateTimeField
+                  label="Time"
+                  time={filters.timeValue}
+                  setTime={handleFilterChange("timeValue")}
+                />
+              </TableCell>
+              <TableCell>
+                <Select
+                  label="Sent"
+                  value={filters.sent}
+                  onChange={handleFilterChange("sent")}
+                  size="small"
+                >
+                  <MenuItem value={"null"}>Both</MenuItem>
+                  <MenuItem value={"true"}>Yes</MenuItem>
+                  <MenuItem value={"false"}>No</MenuItem>
+                </Select>
+              </TableCell>
+            </TableRow>
           </TableHead>
           <TableBody>
-            {sortedJobs.map((job) => {
+            {sortedJobs.map((job, index) => {
               return (
                 <TableRowCustom
+                  key={index}
                   job={job}
                   handleDeleteClick={handleDeleteClick}
                   handleUpdate={handleUpdate}
+                  handleSendClick={handleSendClick}
                 />
               );
             })}
@@ -180,6 +272,27 @@ const ScheduledJobsTable = () => {
           </Button>
           <Button onClick={handleDelete} color="secondary">
             Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Send Now Confirmation Dialog */}
+      <Dialog
+        open={sendDialog.open}
+        onClose={() => setSendDialog({ open: false, job: null })}
+      >
+        <DialogTitle>Confirm you want to send the post</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to send this post now?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSendDialog({ open: false, job: null })}>
+            Cancel
+          </Button>
+          <Button onClick={handleSend} color="secondary">
+            Send The Post
           </Button>
         </DialogActions>
       </Dialog>
