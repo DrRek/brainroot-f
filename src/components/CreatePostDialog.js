@@ -79,7 +79,7 @@ const EditJobDialog = ({ open, data, onClose }) => {
       setFormData((prev) => ({
         ...prev,
         template_id: data.id,
-        recurpost_ids: data.accounts,
+        account_ids: data.accounts,
       }));
   }, [data?.id, data?.accounts]);
 
@@ -231,10 +231,10 @@ const EditJobDialog = ({ open, data, onClose }) => {
         <TextField
           fullWidth
           margin="normal"
-          label="Account Targets (Recurpost)"
-          name="recurpost_ids"
+          label="Account Targets"
+          name="account_ids"
           disabled={true}
-          value={formData.recurpost_ids || ""}
+          value={formData.account_ids || ""}
           onChange={handleInputChange}
         />
 

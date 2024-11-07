@@ -155,7 +155,7 @@ const TemplatesTable = ({ openNewPostDialog }) => {
                         "Take a moment to center yourself with meditation. Just a few minutes can transform your day. \ud83c\udf3f\ud83e\uddd8\u200d\u2642\ufe0f #MindfulMoments #MeditationBreak #StayCentered #PeaceWithin #CalmTheMind #RelaxAndReflect #InnerPeace #FindYourCalm #BreatheInBreatheOut #PauseAndReset",
                       duration: 30,
                       overlay: "Pause. Breathe. Reflect.",
-                      recurpost_ids: [167957, 167956],
+                      accounts_ids: [167957, 167956],
                       start_at_seconds: 0,
                       success: true,
                       template_id: 1,
